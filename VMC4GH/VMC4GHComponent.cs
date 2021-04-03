@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 using Rug.Osc;
@@ -69,7 +68,6 @@ namespace VMC4GH
             {
                 foreach (OscMessage message in bundle.Where(b => b is OscMessage))
                 {
-                    var item = message;
                     switch (message.Address)
                     {
                         case "/VMC/Ext/Bone/Pos":
@@ -86,33 +84,17 @@ namespace VMC4GH
             DA.SetDataList(0, _bonePosition);
         }
 
-        private static Dictionary<string, Point3d> InitBonePosition()
-        {
-            return new Dictionary<string, Point3d> { { "Hips", Point3d.Origin } };
-        }
-
         /// <summary>
         /// Provides an Icon for every component that will be visible in the User Interface.
         /// Icons need to be 24x24 pixels.
         /// </summary>
-        protected override System.Drawing.Bitmap Icon
-        {
-            get
-            {
-                // You can add image files to your project resources and access them like this:
-                //return Resources.IconForThisComponent;
-                return null;
-            }
-        }
+        protected override System.Drawing.Bitmap Icon => null;
 
         /// <summary>
         /// Each component must have a unique Guid to identify it. 
         /// It is vital this Guid doesn't change otherwise old ghx files 
         /// that use the old ID will partially fail during loading.
         /// </summary>
-        public override Guid ComponentGuid
-        {
-            get { return new Guid("b81281cd-17e2-41f6-b5e5-d877abdfe873"); }
-        }
+        public override Guid ComponentGuid => new Guid("b81281cd-17e2-41f6-b5e5-d877abdfe873");
     }
 }
