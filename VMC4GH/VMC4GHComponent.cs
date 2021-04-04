@@ -15,7 +15,7 @@ namespace VMC4GH
     public class VMC4GHComponent : GH_Component
     {
         private static OscReceiver s_receiver;
-        private Dictionary<string, Point3d> _bonePosition;
+        private Dictionary<string, Point3d> _vmcBonePos;
 
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -76,9 +76,9 @@ namespace VMC4GH
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             var port = 0;
-            if (_bonePosition == null)
+            if (_vmcBonePos == null)
             {
-                _bonePosition = BoneInitialize();
+                _vmcBonePos = BoneInitialize();
             }
             if (!DA.GetData(0, ref port)) { return; };
 
@@ -95,7 +95,7 @@ namespace VMC4GH
                     switch (message.Address)
                     {
                         case "/VMC/Ext/Bone/Pos":
-                            _bonePosition[message[0].ToString()] = new Point3d(
+                            _vmcBonePos[message[0].ToString()] = new Point3d(
                                 double.Parse(message[1].ToString()),
                                 double.Parse(message[3].ToString()),
                                 double.Parse(message[2].ToString())
@@ -105,37 +105,25 @@ namespace VMC4GH
                 }
             }
 
-            Dictionary<string, Point3d> pts = GetBonePos();
-            foreach (KeyValuePair<string, Point3d> pair in pts.Where(pair => BoneInitialize().ContainsKey(pair.Key)))
+            Dictionary<string, Point3d> bonePos = GetBonePos();
+            foreach (KeyValuePair<string, Point3d> pair in bonePos.Where(pair => BoneInitialize().ContainsKey(pair.Key)))
             {
                 DA.SetData(pair.Key, pair.Value);
             }
         }
 
-        private Dictionary<string, Point3d> BoneInitialize()
+        private static Dictionary<string, Point3d> BoneInitialize()
         {
             return new Dictionary<string, Point3d>
             {
                 {"Hips", Point3d.Origin},
-                {"LeftUpperLeg", Point3d.Origin},
-                {"LeftLowerLeg", Point3d.Origin},
-                {"LeftFoot", Point3d.Origin},
-                {"LeftToes", Point3d.Origin},
-                {"RightUpperLeg", Point3d.Origin},
-                {"RightLowerLeg", Point3d.Origin},
-                {"RightFoot", Point3d.Origin},
-                {"RightToes", Point3d.Origin},
+                {"LeftUpperLeg", Point3d.Origin}, {"LeftLowerLeg", Point3d.Origin}, {"LeftFoot", Point3d.Origin}, {"LeftToes", Point3d.Origin},
+                {"RightUpperLeg", Point3d.Origin}, {"RightLowerLeg", Point3d.Origin}, {"RightFoot", Point3d.Origin}, {"RightToes", Point3d.Origin},
                 {"Spine", Point3d.Origin},
-                {"Chest", Point3d.Origin},
-                {"UpperChest", Point3d.Origin},
-                {"LeftShoulder", Point3d.Origin},
-                {"RightShoulder", Point3d.Origin},
-                {"LeftUpperArm", Point3d.Origin},
-                {"LeftLowerArm", Point3d.Origin},
-                {"LeftHand", Point3d.Origin},
-                {"RightUpperArm", Point3d.Origin},
-                {"RightLowerArm", Point3d.Origin},
-                {"RightHand", Point3d.Origin},
+                {"Chest", Point3d.Origin}, {"UpperChest", Point3d.Origin},
+                {"LeftShoulder", Point3d.Origin}, {"RightShoulder", Point3d.Origin},
+                {"LeftUpperArm", Point3d.Origin}, {"LeftLowerArm", Point3d.Origin}, {"LeftHand", Point3d.Origin},
+                {"RightUpperArm", Point3d.Origin}, {"RightLowerArm", Point3d.Origin}, {"RightHand", Point3d.Origin},
                 {"Neck", Point3d.Origin},
                 {"Head", Point3d.Origin},
             };
@@ -143,9 +131,8 @@ namespace VMC4GH
 
         private Dictionary<string, Point3d> GetBonePos()
         {
-            //TODO: Last との差分で計算するようにする
             var ptsDict = new Dictionary<string, Point3d>();
-            foreach (KeyValuePair<string, Point3d> pair in _bonePosition)
+            foreach (KeyValuePair<string, Point3d> pair in _vmcBonePos)
             {
                 switch (pair.Key)
                 {
@@ -155,63 +142,63 @@ namespace VMC4GH
                     case "LeftUpperLeg":
                     case "RightUpperLeg":
                     case "Spine":
-                        ptsDict[pair.Key] = pair.Value + _bonePosition["Hips"];
+                        ptsDict[pair.Key] = pair.Value + _vmcBonePos["Hips"];
                         break;
                     case "LeftLowerLeg":
-                        ptsDict[pair.Key] = pair.Value + _bonePosition["Hips"] + _bonePosition["LeftUpperLeg"];
+                        ptsDict[pair.Key] = pair.Value + _vmcBonePos["Hips"] + _vmcBonePos["LeftUpperLeg"];
                         break;
                     case "LeftFoot":
-                        ptsDict[pair.Key] = pair.Value + _bonePosition["Hips"] + _bonePosition["LeftUpperLeg"] + _bonePosition["LeftLowerLeg"];
+                        ptsDict[pair.Key] = pair.Value + _vmcBonePos["Hips"] + _vmcBonePos["LeftUpperLeg"] + _vmcBonePos["LeftLowerLeg"];
                         break;
                     case "LeftToes":
-                        ptsDict[pair.Key] = pair.Value + _bonePosition["Hips"] + _bonePosition["LeftUpperLeg"] + _bonePosition["LeftLowerLeg"] + _bonePosition["LeftFoot"];
+                        ptsDict[pair.Key] = pair.Value + _vmcBonePos["Hips"] + _vmcBonePos["LeftUpperLeg"] + _vmcBonePos["LeftLowerLeg"] + _vmcBonePos["LeftFoot"];
                         break;
                     case "RightLowerLeg":
-                        ptsDict[pair.Key] = pair.Value + _bonePosition["Hips"] + _bonePosition["RightUpperLeg"];
+                        ptsDict[pair.Key] = pair.Value + _vmcBonePos["Hips"] + _vmcBonePos["RightUpperLeg"];
                         break;
                     case "RightFoot":
-                        ptsDict[pair.Key] = pair.Value + _bonePosition["Hips"] + _bonePosition["RightUpperLeg"] + _bonePosition["RightLowerLeg"];
+                        ptsDict[pair.Key] = pair.Value + _vmcBonePos["Hips"] + _vmcBonePos["RightUpperLeg"] + _vmcBonePos["RightLowerLeg"];
                         break;
                     case "RightToes":
-                        ptsDict[pair.Key] = pair.Value + _bonePosition["Hips"] + _bonePosition["RightUpperLeg"] + _bonePosition["RightLowerLeg"] + _bonePosition["RightFoot"];
+                        ptsDict[pair.Key] = pair.Value + _vmcBonePos["Hips"] + _vmcBonePos["RightUpperLeg"] + _vmcBonePos["RightLowerLeg"] + _vmcBonePos["RightFoot"];
                         break;
                     case "Chest":
-                        ptsDict[pair.Key] = pair.Value + _bonePosition["Hips"] + _bonePosition["Spine"];
+                        ptsDict[pair.Key] = pair.Value + _vmcBonePos["Hips"] + _vmcBonePos["Spine"];
                         break;
                     case "UpperChest":
-                        ptsDict[pair.Key] = pair.Value + _bonePosition["Hips"] + _bonePosition["Spine"] + _bonePosition["Chest"];
+                        ptsDict[pair.Key] = pair.Value + _vmcBonePos["Hips"] + _vmcBonePos["Spine"] + _vmcBonePos["Chest"];
                         break;
                     case "LeftShoulder":
                     case "RightShoulder":
                     case "Neck":
-                        ptsDict[pair.Key] = pair.Value + _bonePosition["Hips"] + _bonePosition["Spine"] + _bonePosition["Chest"] + _bonePosition["UpperChest"];
+                        ptsDict[pair.Key] = pair.Value + _vmcBonePos["Hips"] + _vmcBonePos["Spine"] + _vmcBonePos["Chest"] + _vmcBonePos["UpperChest"];
                         break;
                     case "LeftUpperArm":
-                        ptsDict[pair.Key] = pair.Value + _bonePosition["Hips"] + _bonePosition["Spine"] + _bonePosition["Chest"] + _bonePosition["UpperChest"]
-                                            + _bonePosition["LeftShoulder"];
+                        ptsDict[pair.Key] = pair.Value + _vmcBonePos["Hips"] + _vmcBonePos["Spine"] + _vmcBonePos["Chest"] + _vmcBonePos["UpperChest"]
+                                            + _vmcBonePos["LeftShoulder"];
                         break;
                     case "LeftLowerArm":
-                        ptsDict[pair.Key] = pair.Value + _bonePosition["Hips"] + _bonePosition["Spine"] + _bonePosition["Chest"] + _bonePosition["UpperChest"]
-                                            + _bonePosition["LeftShoulder"] + _bonePosition["LeftUpperArm"];
+                        ptsDict[pair.Key] = pair.Value + _vmcBonePos["Hips"] + _vmcBonePos["Spine"] + _vmcBonePos["Chest"] + _vmcBonePos["UpperChest"]
+                                            + _vmcBonePos["LeftShoulder"] + _vmcBonePos["LeftUpperArm"];
                         break;
                     case "LeftHand":
-                        ptsDict[pair.Key] = pair.Value + _bonePosition["Hips"] + _bonePosition["Spine"] + _bonePosition["Chest"] + _bonePosition["UpperChest"]
-                                            + _bonePosition["LeftShoulder"] + _bonePosition["LeftUpperArm"] + _bonePosition["LeftLowerArm"];
+                        ptsDict[pair.Key] = pair.Value + _vmcBonePos["Hips"] + _vmcBonePos["Spine"] + _vmcBonePos["Chest"] + _vmcBonePos["UpperChest"]
+                                            + _vmcBonePos["LeftShoulder"] + _vmcBonePos["LeftUpperArm"] + _vmcBonePos["LeftLowerArm"];
                         break;
                     case "RightUpperArm":
-                        ptsDict[pair.Key] = pair.Value + _bonePosition["Hips"] + _bonePosition["Spine"] + _bonePosition["Chest"] + _bonePosition["UpperChest"]
-                                            + _bonePosition["RightShoulder"];
+                        ptsDict[pair.Key] = pair.Value + _vmcBonePos["Hips"] + _vmcBonePos["Spine"] + _vmcBonePos["Chest"] + _vmcBonePos["UpperChest"]
+                                            + _vmcBonePos["RightShoulder"];
                         break;
                     case "RightLowerArm":
-                        ptsDict[pair.Key] = pair.Value + _bonePosition["Hips"] + _bonePosition["Spine"] + _bonePosition["Chest"] + _bonePosition["UpperChest"]
-                                            + _bonePosition["RightShoulder"] + _bonePosition["RightUpperArm"];
+                        ptsDict[pair.Key] = pair.Value + _vmcBonePos["Hips"] + _vmcBonePos["Spine"] + _vmcBonePos["Chest"] + _vmcBonePos["UpperChest"]
+                                            + _vmcBonePos["RightShoulder"] + _vmcBonePos["RightUpperArm"];
                         break;
                     case "RightHand":
-                        ptsDict[pair.Key] = pair.Value + _bonePosition["Hips"] + _bonePosition["Spine"] + _bonePosition["Chest"] + _bonePosition["UpperChest"]
-                                            + _bonePosition["RightShoulder"] + _bonePosition["RightUpperArm"] + _bonePosition["RightLowerArm"];
+                        ptsDict[pair.Key] = pair.Value + _vmcBonePos["Hips"] + _vmcBonePos["Spine"] + _vmcBonePos["Chest"] + _vmcBonePos["UpperChest"]
+                                            + _vmcBonePos["RightShoulder"] + _vmcBonePos["RightUpperArm"] + _vmcBonePos["RightLowerArm"];
                         break;
                     case "Head":
-                        ptsDict[pair.Key] = pair.Value + _bonePosition["Hips"] + _bonePosition["Spine"] + _bonePosition["Chest"] + _bonePosition["UpperChest"] + _bonePosition["Neck"];
+                        ptsDict[pair.Key] = pair.Value + _vmcBonePos["Hips"] + _vmcBonePos["Spine"] + _vmcBonePos["Chest"] + _vmcBonePos["UpperChest"] + _vmcBonePos["Neck"];
                         break;
                     default:
                         ptsDict[pair.Key] = Point3d.Origin;
